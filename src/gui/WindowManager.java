@@ -3,7 +3,6 @@ package gui;
 import gui.panels.LoginPanel;
 import gui.panels.RegistrationPanel;
 import gui.panels.minecraftservermanager.MPanelManager;
-import utilities.ComponentStyler;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,14 +22,14 @@ public class WindowManager {
         LoginPanel loginPanel = new LoginPanel();
         RegistrationPanel registrationPanel = new RegistrationPanel();
 
-        tabbedPane.addTab("Вход", loginPanel);
-        tabbedPane.addTab("Регистрация", registrationPanel);
+//        tabbedPane.addTab("Вход", loginPanel);
+//        tabbedPane.addTab("Регистрация", registrationPanel);
 //        tabbedPane.addTab("Рисовалка", new DrawingPanel());
         tabbedPane.addTab("Servers", new MPanelManager());
 
         frame.add(tabbedPane);
 
-        ComponentStyler.styleContainer(frame);
+//        ComponentStyler.styleContainer(frame);
 
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
