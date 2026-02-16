@@ -17,6 +17,8 @@ public class MPanelManager extends JPanel {
     private final JPanel serverListPanel; // Панель, куда будут добавляться карточки серверов
     private int servernumber = 0;
 
+    String serverName = "server_" + servernumber;
+
     public MPanelManager() {
         // Темная тема и аккуратные отступы
         this.setLayout(new BorderLayout(10, 10));
@@ -53,7 +55,6 @@ public class MPanelManager extends JPanel {
 
         // --- ЛОГИКА СОЗДАНИЯ ---
         createServerBtn.addActionListener(ev -> {
-            String serverName = "server_" + servernumber;
             try {
                 Path newServerPath = directoryPath.resolve(serverName);
                 if (!Files.exists(newServerPath)) {
@@ -119,7 +120,10 @@ public class MPanelManager extends JPanel {
         edit_server.setForeground(Color.WHITE);
         edit_server.setFont(new Font("Monospaced", Font.BOLD, 14));
         edit_server.setBackground(new Color(70, 73, 75));
+        edit_server.addActionListener(e -> {
+            JPanel editPanel = new EditServer(serverName);
 
+        });
 
         JLabel statusLbl = new JLabel(status);
         statusLbl.setForeground(new Color(200, 200, 200));
