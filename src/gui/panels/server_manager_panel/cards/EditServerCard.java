@@ -1,4 +1,4 @@
-package gui.panels.server_manager.cards;
+package gui.panels.server_manager_panel.cards;
 
 import gui.share.Theme;
 import gui.share.Utils;

@@ -1,6 +1,6 @@
 package gui;
 
-import gui.panels.server_manager.SMPanel;
+import gui.panels.server_manager_panel.SMPanel;
 
 import javax.swing.*;
 import java.awt.*;

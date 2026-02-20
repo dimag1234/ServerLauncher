@@ -1,6 +1,6 @@
-package gui.panels.server_manager.cards;
+package gui.panels.server_manager_panel.cards;
 
-import gui.panels.server_manager.SMLogic;
+import gui.panels.server_manager_panel.SMLogic;
 import gui.share.Theme;
 import gui.share.Utils;
 import javax.swing.*;

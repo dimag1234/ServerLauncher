@@ -1,7 +1,7 @@
-package gui.panels.server_manager;
+package gui.panels.server_manager_panel;
 
-import gui.panels.server_manager.cards.EditServerCard;
-import gui.panels.server_manager.cards.ServerCard;
+import gui.panels.server_manager_panel.cards.EditServerCard;
+import gui.panels.server_manager_panel.cards.ServerCard;
 
 import javax.swing.*;
 import java.io.*;
