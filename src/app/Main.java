@@ -7,7 +7,7 @@ import javax.swing.*;
 public class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JFrame frame = WindowManager.createWindow("Форма для авторизации");
+            JFrame frame = WindowManager.createWindow("Менеджер серверов");
         });
     }
 }

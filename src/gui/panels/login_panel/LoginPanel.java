@@ -1,4 +1,4 @@
-package gui.panels;
+package gui.panels.login_panel;
 
 import auth.AccountManager;
 

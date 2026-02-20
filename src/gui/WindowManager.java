@@ -1,8 +1,6 @@
 package gui;
 
-import gui.panels.LoginPanel;
-import gui.panels.RegistrationPanel;
-import gui.panels.minecraftservermanager.MPanelManager;
+import gui.panels.server_manager.SMPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,19 +16,11 @@ public class WindowManager {
         frame.setSize(width, height);
 
         JTabbedPane tabbedPane = new JTabbedPane();
-
-        LoginPanel loginPanel = new LoginPanel();
-        RegistrationPanel registrationPanel = new RegistrationPanel();
-
 //        tabbedPane.addTab("Вход", loginPanel);
 //        tabbedPane.addTab("Регистрация", registrationPanel);
-//        tabbedPane.addTab("Рисовалка", new DrawingPanel());
-        tabbedPane.addTab("Servers", new MPanelManager());
+        tabbedPane.addTab("", new SMPanel());
 
         frame.add(tabbedPane);
-
-//        ComponentStyler.styleContainer(frame);
-
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
 
