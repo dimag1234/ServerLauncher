@@ -9,6 +9,7 @@ import java.awt.*;
 
 public class EditServerCard extends JPanel {
 
+
     public EditServerCard(String serverName) {
         setLayout(new BorderLayout(10, 10));
         setBackground(Theme.BACKGROUND_DARK);
@@ -38,8 +39,8 @@ public class EditServerCard extends JPanel {
         contentPanel.setBackground(Theme.BACKGROUND_MEDIUM);
         contentPanel.setBorder(Utils.createContentBorder());
 
-        addInfoRow(contentPanel, "Путь к серверу:", "/home/user/Servers/server_0");
-        addInfoRow(contentPanel, "Версия ядра:", "Paper 1.21.1");
+        addInfoRow(contentPanel, "Путь к серверу:", "");
+        addInfoRow(contentPanel, "Версия ядра:", "Paper 1.21.11");
         addInfoRow(contentPanel, "Статус:", "Готов к запуску");
 
         return contentPanel;
