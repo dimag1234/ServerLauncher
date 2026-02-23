@@ -3,46 +3,37 @@ package gui.panels.server_manager_panel;
 import gui.panels.server_manager_panel.cards.EditServerCard;
 import gui.panels.server_manager_panel.cards.ServerCard;
 import settings.ServerSettings;
+import settings.ServerSettings.ServerCardSettings;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SMLogic {
 
-    private static final String SERVER_JAR_URL = "https://fill-data.papermc.io/v1/objects/e708e8c132dc143ffd73528cccb9532e2eb17628b1a0eee74469bf466c7003f8/paper-1.21.11-116.jar";
-    private static final String SERVER_JAR_NAME = "server.jar";
     private final ConcurrentHashMap<String, Process> runningProcesses = new ConcurrentHashMap<>();
     private final SMPanel panel;
-    private boolean isPressedStartButton = false;
+    private final ServerSettings ss = ServerSettings.getInstance();
+
     private int serverCounter = 0;
 
     public SMLogic(SMPanel panel) {
         this.panel = panel;
-        createServersDirectoryIfNeeded();
-    }
-
-    private void createServersDirectoryIfNeeded() {
-        try {
-            Files.createDirectories(ServerSettings.getInstance().getServersPath());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void loadExistingServers() {
-        File[] folders = ServerSettings.getInstance().getServersPath().toFile().listFiles(File::isDirectory);
+        File[] folders = ss.getServersPath().toFile().listFiles(File::isDirectory);
         if (folders != null) {
             for (File folder : folders) {
-                String folderName = folder.getName();
-                panel.addServerCard(new ServerCard(folderName, "Остановлен", this));
-                updateServerCounter(folderName);
+                String name = folder.getName();
+                ServerCardSettings card = ss.loadServerCardSettings(name);
+                panel.addServerCard(new ServerCard(card, this));
+                updateServerCounter(name);
             }
         }
     }
@@ -51,113 +42,137 @@ public class SMLogic {
         if (folderName.startsWith("server_")) {
             try {
                 int num = Integer.parseInt(folderName.replace("server_", ""));
-                if (num >= serverCounter) {
-                    serverCounter = num + 1;
-                }
-            } catch (NumberFormatException ignored) {
-            }
+                serverCounter = Math.max(serverCounter, num + 1);
+            } catch (NumberFormatException ignored) {}
         }
     }
 
     public void createNewServer() {
-        String serverName = "server_" + serverCounter;
-        Path newServerPath = ServerSettings.getInstance().getServersPath().resolve(serverName);
+        String serverName = "server_" + serverCounter++;
+        Path serverPath = ss.getServerPath(serverName);
 
-        if (Files.exists(newServerPath)) {
+        if (Files.exists(serverPath)) {
             panel.showMessage("Папка уже существует!");
             return;
         }
 
         try {
-            Files.createDirectories(newServerPath);
-            CompletableFuture.runAsync(() -> downloadServerJar(newServerPath))
-                    .thenRun(() -> startServerProcess(serverName, newServerPath))
-                    .thenRun(() -> SwingUtilities.invokeLater(() -> {
-                        panel.addServerCard(new ServerCard(serverName, "Остановлен", this));
-                        serverCounter++;
-                    }));
+            Files.createDirectories(serverPath);
+
+            ServerCardSettings card = new ServerCardSettings(serverName);
+            ss.saveServerCardSettings(serverName, card);
+
+            // Показываем карточку сразу
+            panel.addServerCard(new ServerCard(card, this));
+
+            // Асинхронная подготовка файлов
+            CompletableFuture.runAsync(() -> initializeServer(serverPath, card))
+                    .thenRun(() -> System.out.println("✅ Сервер " + serverName + " создан"));
+
         } catch (IOException e) {
             e.printStackTrace();
-            panel.showMessage("Ошибка при создании сервера: " + e.getMessage());
+            panel.showMessage("Ошибка создания: " + e.getMessage());
         }
     }
 
-    private void downloadServerJar(Path serverPath) {
+    private void initializeServer(Path serverPath, ServerCardSettings card) {
         try {
-            Path targetPath = serverPath.resolve(SERVER_JAR_NAME);
-            try (InputStream in = new URL(SERVER_JAR_URL).openStream()) {
-                Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
-                System.out.println("Файл скачан: " + targetPath);
-            }
+            downloadJar(serverPath);
+            createEula(serverPath);
+            createBasicProperties(serverPath, card);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void downloadJar(Path serverPath) {
+        try (InputStream in = new URL(ServerSettings.SERVER_JAR_URL).openStream()) {
+            Path target = serverPath.resolve(ServerSettings.SERVER_JAR_NAME);
+            Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void startServerProcess(String serverName, Path serverPath) {
+    private void createEula(Path serverPath) {
         try {
-            String javaPath = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-
-            ProcessBuilder pb = new ProcessBuilder(javaPath, "-Xmx2G", "-jar", SERVER_JAR_NAME, "-nogui")
-                    .directory(serverPath.toFile());
-//                    .inheritIO();
-
-            Process process = pb.start();
-            runningProcesses.put(serverName, process); // Сохраняем процесс
-
-            int exitCode = process.waitFor();
-            runningProcesses.remove(serverName); // Удаляем после выхода
-            System.out.println("Сервер " + serverName + " остановлен. Код: " + exitCode);
-
-        } catch (IOException | InterruptedException e) {
+            Files.writeString(serverPath.resolve(ServerSettings.EULA_TXT), "eula=true");
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    private void createBasicProperties(Path serverPath, ServerCardSettings card) {
+        Path prop = serverPath.resolve(ServerSettings.SERVER_PROPERTIES);
+        Properties p = new Properties();
+        p.setProperty("server-port", String.valueOf(card.getPort()));
+        p.setProperty("motd", card.getMotd());
+        p.setProperty("max-players", "20");
+        p.setProperty("online-mode", "true");
 
-    public void openEditServer(String serverName) {
-        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(panel);
-        JDialog dialog = new JDialog(parentFrame, "Редактирование сервера", true);
-
-        dialog.add(new EditServerCard(serverName));
-        dialog.pack();
-        dialog.setLocationRelativeTo(parentFrame);
-        dialog.setVisible(true);
+        try (OutputStream os = Files.newOutputStream(prop)) {
+            p.store(os, "Generated by launcher");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void startstopbutton(JButton button, String serverName, JLabel status) {
-        Path serverPath = ServerSettings.getInstance().getServersPath().resolve(serverName);
+    private void startServerProcess(String serverName, ServerCardSettings card) {
+        try {
+            Path path = ss.getServerPath(serverName);
+            String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
 
-        // Проверяем, запущен ли сервер (вместо одной переменной isPressedStartButton)
+            ProcessBuilder pb = new ProcessBuilder(
+                    java,
+                    "-Xmx" + card.getRamGB() + "G",
+                    "-Xms" + Math.max(1, card.getRamGB() / 2) + "G",
+                    "-jar", ServerSettings.SERVER_JAR_NAME,
+                    "-nogui"
+            ).directory(path.toFile());
+
+            Process proc = pb.start();
+            runningProcesses.put(serverName, proc);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void startstopbutton(JButton btn, String serverName, JLabel status, ServerCardSettings card) {
         if (!runningProcesses.containsKey(serverName)) {
-            // ЛОГИКА ЗАПУСКА
-            button.setText("Stop");
-            button.setBorder(BorderFactory.createLineBorder(Color.RED, 3));
+            // START
+            btn.setText("Stop");
+            btn.setBorder(BorderFactory.createLineBorder(Color.RED, 3));
             status.setText("Запуск...");
 
-            CompletableFuture.runAsync(() -> startServerProcess(serverName, serverPath))
-                    .thenRun(() -> SwingUtilities.invokeLater(() -> {
-                        status.setText("Остановлен");
-                        button.setText("Start");
-                        button.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
-                    }));
+            CompletableFuture.runAsync(() -> startServerProcess(serverName, card))
+                    .thenRun(() -> SwingUtilities.invokeLater(() -> status.setText("Запущен")));
         } else {
-            // ЛОГИКА ОСТАНОВКИ
-            Process process = runningProcesses.get(serverName);
-            if (process != null && process.isAlive()) {
-                try {
-                    // Отправляем команду stop в стандартный ввод процесса
-                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-                    writer.write("stop");
-                    writer.newLine();
-                    writer.flush();
+            // STOP
+            Process p = runningProcesses.get(serverName);
+            if (p != null && p.isAlive()) {
+                try (OutputStreamWriter w = new OutputStreamWriter(p.getOutputStream())) {
+                    w.write("stop\n");
+                    w.flush();
                     status.setText("Выключение...");
                 } catch (IOException e) {
-                    e.printStackTrace();
-                    process.destroy(); // Если не получилось по-хорошему, закрываем принудительно
+                    p.destroy();
                 }
             }
         }
     }
 
+    public void openEditServer(String serverName) {
+        JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(panel);
+        JDialog dlg = new JDialog(parent, "Редактирование — " + serverName, true);
+        dlg.add(new EditServerCard(serverName, this));   // передаём this для сохранения
+        dlg.pack();
+        dlg.setLocationRelativeTo(parent);
+        dlg.setVisible(true);
+    }
+
+    // Для EditServerCard — чтобы обновить карточку после сохранения
+    public ServerCardSettings reloadCard(String serverName) {
+        return ss.loadServerCardSettings(serverName);
+    }
 }

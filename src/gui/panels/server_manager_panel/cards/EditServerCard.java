@@ -1,7 +1,10 @@
 package gui.panels.server_manager_panel.cards;
 
+import gui.panels.server_manager_panel.SMLogic;
 import gui.share.Theme;
 import gui.share.Utils;
+import settings.ServerSettings;
+import settings.ServerSettings.ServerCardSettings;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -9,61 +12,132 @@ import java.awt.*;
 
 public class EditServerCard extends JPanel {
 
+    private final String serverName;
+    private final SMLogic logic;
+    private final ServerCardSettings card;
 
-    public EditServerCard(String serverName) {
-        setLayout(new BorderLayout(10, 10));
-        setBackground(Theme.BACKGROUND_DARK);
-        setBorder(new EmptyBorder(Theme.PADDING_LARGE, Theme.PADDING_LARGE,
-                Theme.PADDING_LARGE, Theme.PADDING_LARGE));
+    // Поля редактирования
+    private final JTextField displayNameField;
+    private final JTextField versionField;
+    private final JSpinner ramSpinner;
+    private final JSpinner portSpinner;
+    private final JTextField motdField;
 
-        add(createHeaderPanel(serverName), BorderLayout.NORTH);
+    public EditServerCard(String serverName, SMLogic logic) {
+        this.serverName = serverName;
+        this.logic = logic;
+        this.card = logic.reloadCard(serverName);   // загружаем актуальные настройки
 
-        add(createContentPanel(), BorderLayout.CENTER);
-    }
+        setLayout(new BorderLayout(15, 15));
+        setBackground(Theme.BACKGROUND_MEDIUM);
+        setBorder(new EmptyBorder(20, 20, 20, 20));
 
-    private JPanel createHeaderPanel(String serverName) {
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setOpaque(false);
-
-        JLabel title = new JLabel("Настройки: " + serverName);
-        title.setFont(Theme.FONT_SUBTITLE);
+        // ===================== ЗАГОЛОВОК =====================
+        JLabel title = new JLabel("Редактирование сервера");
+        title.setFont(Theme.FONT_TITLE);
         title.setForeground(Theme.TEXT_PRIMARY);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        add(title, BorderLayout.NORTH);
 
-        headerPanel.add(title, BorderLayout.WEST);
-        return headerPanel;
+        // ===================== ФОРМА =====================
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        int row = 0;
+
+        // Folder name (только для информации)
+        addFormLabel(form, gbc, row++, "Папка сервера:", serverName);
+
+        // Display Name
+        displayNameField = new JTextField(card.getDisplayName(), 25);
+        addFormRow(form, gbc, row++, "Отображаемое имя:", displayNameField);
+
+        // Version
+        versionField = new JTextField(card.getVersion(), 15);
+        addFormRow(form, gbc, row++, "Версия:", versionField);
+
+        // RAM
+        ramSpinner = new JSpinner(new SpinnerNumberModel(card.getRamGB(), 1, 32, 1));
+        addFormRow(form, gbc, row++, "ОЗУ (GB):", ramSpinner);
+
+        // Port
+        portSpinner = new JSpinner(new SpinnerNumberModel(card.getPort(), 1024, 65535, 1));
+        addFormRow(form, gbc, row++, "Порт:", portSpinner);
+
+        // MOTD
+        motdField = new JTextField(card.getMotd(), 30);
+        addFormRow(form, gbc, row++, "MOTD:", motdField);
+
+        add(form, BorderLayout.CENTER);
+
+        // ===================== КНОПКИ =====================
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        buttons.setOpaque(false);
+
+        JButton saveBtn = new JButton("Сохранить");
+        Utils.stylePrimaryButton(saveBtn);
+        saveBtn.addActionListener(e -> saveAndClose());
+
+        JButton cancelBtn = new JButton("Отмена");
+        Utils.stylePrimaryButton(cancelBtn);           // можно сделать серой, но для простоты
+        cancelBtn.addActionListener(e -> ((JDialog) SwingUtilities.getWindowAncestor(this)).dispose());
+
+        buttons.add(saveBtn);
+        buttons.add(cancelBtn);
+
+        add(buttons, BorderLayout.SOUTH);
     }
 
-    private JPanel createContentPanel() {
-        JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        contentPanel.setBackground(Theme.BACKGROUND_MEDIUM);
-        contentPanel.setBorder(Utils.createContentBorder());
+    private void addFormLabel(JPanel panel, GridBagConstraints gbc, int row, String labelText, String value) {
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0.3;
+        JLabel lbl = new JLabel(labelText);
+        lbl.setForeground(Theme.TEXT_PRIMARY);
+        panel.add(lbl, gbc);
 
-        addInfoRow(contentPanel, "Путь к серверу:", "");
-        addInfoRow(contentPanel, "Версия ядра:", "Paper 1.21.11");
-        addInfoRow(contentPanel, "Статус:", "Готов к запуску");
-
-        return contentPanel;
+        gbc.gridx = 1; gbc.weightx = 0.7;
+        JLabel val = new JLabel(value);
+        val.setForeground(Theme.TEXT_SECONDARY);
+        panel.add(val, gbc);
     }
 
-    private void addInfoRow(JPanel container, String labelText, String valueText) {
-        JPanel row = new JPanel(new BorderLayout());
-        row.setOpaque(false);
-        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        row.setBorder(new EmptyBorder(5, 0, 5, 0));
+    private void addFormRow(JPanel panel, GridBagConstraints gbc, int row, String labelText, JComponent field) {
+        gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0.3;
+        JLabel lbl = new JLabel(labelText);
+        lbl.setForeground(Theme.TEXT_PRIMARY);
+        panel.add(lbl, gbc);
 
-        JLabel label = new JLabel(labelText);
-        label.setForeground(Theme.TEXT_SECONDARY);
-        label.setFont(Theme.FONT_REGULAR);
+        gbc.gridx = 1; gbc.weightx = 0.7;
+        panel.add(field, gbc);
+    }
 
-        JLabel value = new JLabel(valueText);
-        value.setForeground(Theme.TEXT_PRIMARY);
-        value.setFont(Theme.FONT_MONOSPACE);
+    private void saveAndClose() {
+        try {
+            // Обновляем объект настроек
+            card.setDisplayName(displayNameField.getText().trim());
+            card.setVersion(versionField.getText().trim());
+            card.setRamGB((Integer) ramSpinner.getValue());
+            card.setPort((Integer) portSpinner.getValue());
+            card.setMotd(motdField.getText().trim());
 
-        row.add(label, BorderLayout.WEST);
-        row.add(value, BorderLayout.EAST);
+            // Сохраняем
+            ServerSettings.getInstance().saveServerCardSettings(serverName, card);
 
-        container.add(row);
-        container.add(Box.createRigidArea(new Dimension(0, 5)));
+            // Если сделал ss private — замени на:
+            // ServerSettings.getInstance().saveServerCardSettings(serverName, card);
+
+            JOptionPane.showMessageDialog(this, "Настройки сохранены!", "Успех", JOptionPane.INFORMATION_MESSAGE);
+
+            // Закрываем диалог
+            Window w = SwingUtilities.getWindowAncestor(this);
+            if (w instanceof JDialog) w.dispose();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Ошибка сохранения:\n" + ex.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
     }
 }
