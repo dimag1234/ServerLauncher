@@ -132,7 +132,7 @@ public class SMLogic {
                     "-jar", ServerSettings.SERVER_JAR_NAME,
                     "-nogui"
             ).directory(path.toFile());
-            
+
 
             Process proc = pb.start();
             runningProcesses.put(serverName, proc);
@@ -140,6 +140,7 @@ public class SMLogic {
 
         } catch (Exception e) {
             e.printStackTrace();
+
         }
     }
 
