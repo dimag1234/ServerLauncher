@@ -1,13 +1,14 @@
 package settings;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public class ServerSettings {
-
-    private static final Path SERVERS_PATH = Paths.get(System.getProperty("user.home"), "Servers");
-    private static volatile ServerSettings instance;
 
     // ===================== КОНСТАНТЫ =====================
     public static final String SERVER_JAR_NAME = "server.jar";
@@ -15,6 +16,8 @@ public class ServerSettings {
     public static final String SERVER_PROPERTIES = "server.properties";
     public static final String EULA_TXT = "eula.txt";
     public static final String CARD_SETTINGS_FILE = "card.settings";
+    private static final Path SERVERS_PATH = Paths.get(System.getProperty("user.home"), "Servers");
+    private static volatile ServerSettings instance;
 
     private ServerSettings() {
         createServersDirectoryIfNeeded();
@@ -88,7 +91,7 @@ public class ServerSettings {
                 props.load(is);
 
                 settings.setDisplayName(props.getProperty("displayName", serverName));
-                settings.setVersion(props.getProperty("version", "1.21.1"));
+                settings.setVersion(props.getProperty("version", "1.21.11"));
                 settings.setRamGB(Integer.parseInt(props.getProperty("ramGB", "2")));
                 settings.setPort(Integer.parseInt(props.getProperty("port", "25565")));
                 settings.setMotd(props.getProperty("motd", "A Minecraft Server"));
@@ -110,26 +113,54 @@ public class ServerSettings {
         public ServerCardSettings(String serverFolderName) {
             this.serverFolderName = serverFolderName;
             this.displayName = serverFolderName;
-            this.version = "1.21.1";
+            this.version = "1.21.11";
             this.ramGB = 2;
             this.port = 25565;
             this.motd = "A Minecraft Server";
         }
 
-        public String getServerFolderName() { return serverFolderName; }
-        public String getDisplayName() { return displayName; }
-        public void setDisplayName(String v) { this.displayName = v; }
+        public String getServerFolderName() {
+            return serverFolderName;
+        }
 
-        public String getVersion() { return version; }
-        public void setVersion(String v) { this.version = v; }
+        public String getDisplayName() {
+            return displayName;
+        }
 
-        public int getRamGB() { return ramGB; }
-        public void setRamGB(int v) { this.ramGB = Math.max(1, v); }
+        public void setDisplayName(String v) {
+            this.displayName = v;
+        }
 
-        public int getPort() { return port; }
-        public void setPort(int v) { this.port = v; }
+        public String getVersion() {
+            return version;
+        }
 
-        public String getMotd() { return motd; }
-        public void setMotd(String v) { this.motd = v; }
+        public void setVersion(String v) {
+            this.version = v;
+        }
+
+        public int getRamGB() {
+            return ramGB;
+        }
+
+        public void setRamGB(int v) {
+            this.ramGB = Math.max(1, v);
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public void setPort(int v) {
+            this.port = v;
+        }
+
+        public String getMotd() {
+            return motd;
+        }
+
+        public void setMotd(String v) {
+            this.motd = v;
+        }
     }
 }

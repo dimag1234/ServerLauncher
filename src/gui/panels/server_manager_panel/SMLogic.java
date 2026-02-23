@@ -9,7 +9,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,7 +45,8 @@ public class SMLogic {
             try {
                 int num = Integer.parseInt(folderName.replace("server_", ""));
                 serverCounter = Math.max(serverCounter, num + 1);
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
     }
 
@@ -129,9 +132,11 @@ public class SMLogic {
                     "-jar", ServerSettings.SERVER_JAR_NAME,
                     "-nogui"
             ).directory(path.toFile());
+            
 
             Process proc = pb.start();
             runningProcesses.put(serverName, proc);
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -155,8 +160,23 @@ public class SMLogic {
                     w.write("stop\n");
                     w.flush();
                     status.setText("Выключение...");
+
+                    // Запускаем ожидание в фоновом потоке
+                    p.onExit().thenRun(() -> {
+                        // SwingUtilities нужен, если вы используете Swing для обновления UI
+                        runningProcesses.remove(serverName);   // ← добавь эту строку
+                        javax.swing.SwingUtilities.invokeLater(() -> {
+                            btn.setText("Start");
+                            btn.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
+                            status.setText("Остановлен");
+                        });
+                    });
+
                 } catch (IOException e) {
                     p.destroy();
+                    btn.setText("Start");
+                    btn.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
+                    status.setText("Остановлен (принудительно)");
                 }
             }
         }
@@ -174,5 +194,37 @@ public class SMLogic {
     // Для EditServerCard — чтобы обновить карточку после сохранения
     public ServerCardSettings reloadCard(String serverName) {
         return ss.loadServerCardSettings(serverName);
+    }
+
+    public void SendToServer(String serverName, String command) {
+        if (runningProcesses.containsKey(serverName)) {
+            Process p = runningProcesses.get(serverName);
+            if (p != null && p.isAlive()) {
+                try (OutputStreamWriter w = new OutputStreamWriter(p.getOutputStream())) {
+                    w.write(command + "\n");
+                    w.flush();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void LoggingToConsole(String serverName, JTextArea textArea) {
+        if (runningProcesses.containsKey(serverName)) {
+            Process p = runningProcesses.get(serverName);
+            if (p != null && p.isAlive()) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        textArea.append(line + "\n");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
 }
