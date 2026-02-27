@@ -11,7 +11,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.concurrent.CompletableFuture;
 
 public class EditServerCard extends JPanel {
 
@@ -25,7 +24,8 @@ public class EditServerCard extends JPanel {
     private final JSpinner ramSpinner;
     private final JSpinner portSpinner;
     private final JTextField motdField;
-    private final JTextArea logArea;
+    private final JTextArea logArea = new JTextArea();
+    ;
     private final JScrollPane logAreafinal;
     private final JTextField inputcommands;
 
@@ -81,12 +81,6 @@ public class EditServerCard extends JPanel {
         motdField = new JTextField(card.getMotd(), 30);
         addFormRow(form, gbc, row++, "MOTD:", motdField);
 
-        // LOG AREA
-        logArea = new JTextArea();
-        logAreafinal = new JScrollPane(logArea);
-        addFormRow(form, gbc, row++, "Console", logAreafinal);
-        CompletableFuture.runAsync(() -> logic.LoggingToConsole(card.getServerFolderName(), logArea));
-
         // INPUT COMMANDS
         inputcommands = new JTextField();
         inputcommands.addKeyListener(new KeyListener() {
@@ -98,12 +92,12 @@ public class EditServerCard extends JPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyChar() == KeyEvent.VK_ENTER) {
-                    if (!inputcommands.getText().isEmpty()) {
-                        logic.SendToServer(card.getServerFolderName(), inputcommands.getText());
-                        logArea.append(inputcommands.getText());
+                    String cmd = inputcommands.getText().trim();
+                    if (!cmd.isEmpty()) {
+                        logic.SendToServer(card.getServerFolderName(), cmd);
+                        logArea.append("> " + cmd + "\n");
                         inputcommands.setText("");
-                    } else {
-                        System.out.println("Строка комманд пуста");
+                        logArea.setCaretPosition(logArea.getDocument().getLength());
                     }
                 }
             }
@@ -114,6 +108,43 @@ public class EditServerCard extends JPanel {
             }
         });
         addFormRow(form, gbc, row++, "Input", inputcommands);
+
+        JButton clearBtn = new JButton("Очистить консоль");
+        Utils.stylePrimaryButton(clearBtn);
+        clearBtn.addActionListener(e -> {
+            logic.clearServerLog(serverName);
+            logArea.setText("");
+        });
+        addFormRow(form, gbc, row++, "Очистить консоль", clearBtn);
+
+
+        // LOG AREA
+        logArea.setEditable(false);
+        logArea.setFont(new Font("Consolas", Font.PLAIN, 13)); // красивый шрифт
+        logArea.setBackground(new Color(30, 30, 30));
+        logArea.setForeground(Color.LIGHT_GRAY);
+        logAreafinal = new JScrollPane(logArea);
+        logAreafinal.setPreferredSize(new Dimension(600, 300)); // минимальный размер
+
+        // Добавляем в форму с растяжением
+        gbc.gridx = 0;
+        gbc.gridy = row++;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;        // ← главное для растяжения
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.CENTER;
+        JLabel consoleLabel = new JLabel("Console");
+        consoleLabel.setForeground(Theme.TEXT_PRIMARY);
+        form.add(consoleLabel, gbc);
+
+        gbc.gridy = row++;
+        gbc.gridheight = 4;       // занимаем несколько строк для высоты
+        form.add(logAreafinal, gbc);
+
+        // ← НОВОЕ: сразу загружаем сохранённую историю
+        logic.LoggingToConsole(card.getServerFolderName(), logArea);   // без CompletableFuture!
+
 
         add(form, BorderLayout.CENTER);
 

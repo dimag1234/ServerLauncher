@@ -9,16 +9,22 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class SMLogic {
 
     private final ConcurrentHashMap<String, Process> runningProcesses = new ConcurrentHashMap<>();
+    private final Set<String> activeLogReaders = ConcurrentHashMap.newKeySet(); // ← защита от двойного запуска
+    private final ConcurrentHashMap<String, StringBuilder> serverLogs = new ConcurrentHashMap<>(); // ← сохранение логов
+    private final ConcurrentHashMap<String, PrintWriter> processInputs = new ConcurrentHashMap<>(); // ← главный фикс
     private final SMPanel panel;
     private final ServerSettings ss = ServerSettings.getInstance();
 
@@ -50,7 +56,7 @@ public class SMLogic {
         }
     }
 
-    public void createNewServer() {
+    public void createNewServer(String motd, String version, int ram) {
         String serverName = "server_" + serverCounter++;
         Path serverPath = ss.getServerPath(serverName);
 
@@ -69,7 +75,7 @@ public class SMLogic {
             panel.addServerCard(new ServerCard(card, this));
 
             // Асинхронная подготовка файлов
-            CompletableFuture.runAsync(() -> initializeServer(serverPath, card))
+            CompletableFuture.runAsync(() -> initializeServer(serverPath, card, version))
                     .thenRun(() -> System.out.println("✅ Сервер " + serverName + " создан"));
 
         } catch (IOException e) {
@@ -78,7 +84,7 @@ public class SMLogic {
         }
     }
 
-    private void initializeServer(Path serverPath, ServerCardSettings card) {
+    private void initializeServer(Path serverPath, ServerCardSettings card, String version) {
         try {
             downloadJar(serverPath);
             createEula(serverPath);
@@ -132,19 +138,26 @@ public class SMLogic {
                     "-jar", ServerSettings.SERVER_JAR_NAME,
                     "-nogui"
             ).directory(path.toFile());
-            
+
+            pb.redirectErrorStream(true);
 
             Process proc = pb.start();
             runningProcesses.put(serverName, proc);
+            serverLogs.putIfAbsent(serverName, new StringBuilder());
 
+            // Постоянный PrintWriter для отправки команд
+            PrintWriter pw = new PrintWriter(
+                    new OutputStreamWriter(proc.getOutputStream(), StandardCharsets.UTF_8), true);
+            processInputs.put(serverName, pw);
 
         } catch (Exception e) {
             e.printStackTrace();
+            panel.showMessage("Ошибка запуска: " + e.getMessage());
         }
     }
 
     public void startstopbutton(JButton btn, String serverName, JLabel status, ServerCardSettings card) {
-        if (!runningProcesses.containsKey(serverName)) {
+        if (!runningProcesses.containsKey(serverName) || !runningProcesses.get(serverName).isAlive()) {
             // START
             btn.setText("Stop");
             btn.setBorder(BorderFactory.createLineBorder(Color.RED, 3));
@@ -155,31 +168,87 @@ public class SMLogic {
         } else {
             // STOP
             Process p = runningProcesses.get(serverName);
-            if (p != null && p.isAlive()) {
-                try (OutputStreamWriter w = new OutputStreamWriter(p.getOutputStream())) {
-                    w.write("stop\n");
-                    w.flush();
-                    status.setText("Выключение...");
+            status.setText("Выключение...");
 
-                    // Запускаем ожидание в фоновом потоке
-                    p.onExit().thenRun(() -> {
-                        // SwingUtilities нужен, если вы используете Swing для обновления UI
-                        runningProcesses.remove(serverName);   // ← добавь эту строку
-                        javax.swing.SwingUtilities.invokeLater(() -> {
-                            btn.setText("Start");
-                            btn.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
-                            status.setText("Остановлен");
-                        });
-                    });
-
-                } catch (IOException e) {
-                    p.destroy();
-                    btn.setText("Start");
-                    btn.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
-                    status.setText("Остановлен (принудительно)");
-                }
+            // Отправляем stop через постоянный PrintWriter
+            PrintWriter writer = processInputs.get(serverName);
+            if (writer != null) {
+                writer.println("stop");
+                writer.flush();
             }
+
+            p.onExit().orTimeout(10, TimeUnit.SECONDS)
+                    .thenRun(() -> finishStop(serverName, btn, status, false))
+                    .exceptionally(ex -> {
+                        if (p.isAlive()) p.destroyForcibly();
+                        finishStop(serverName, btn, status, true);
+                        return null;
+                    });
         }
+    }
+
+    private void finishStop(String serverName, JButton btn, JLabel status, boolean forced) {
+        runningProcesses.remove(serverName);
+        activeLogReaders.remove(serverName);
+
+        PrintWriter pw = processInputs.remove(serverName);
+        if (pw != null) try {
+            pw.close();
+        } catch (Exception ignored) {
+        }
+
+        SwingUtilities.invokeLater(() -> {
+            btn.setText("Start");
+            btn.setBorder(BorderFactory.createLineBorder(Color.GREEN, 3));
+            status.setText(forced ? "Остановлен (принудительно)" : "Остановлен");
+        });
+    }
+
+    public void LoggingToConsole(String serverName, JTextArea textArea) {
+        StringBuilder history = serverLogs.computeIfAbsent(serverName, k -> new StringBuilder());
+
+        // Восстанавливаем историю
+        String currentLog;
+        synchronized (history) {
+            currentLog = history.toString();
+        }
+        SwingUtilities.invokeLater(() -> {
+            textArea.setText(currentLog);
+            textArea.setCaretPosition(textArea.getDocument().getLength());
+        });
+
+        Process p = runningProcesses.get(serverName);
+        if (p == null || !p.isAlive() || !activeLogReaders.add(serverName)) return;
+
+        CompletableFuture.runAsync(() -> {
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String finalLine = line + "\n";
+                    synchronized (history) {
+                        history.append(finalLine);
+                    }
+                    SwingUtilities.invokeLater(() -> {
+                        if (textArea.isDisplayable()) {
+                            textArea.append(finalLine);
+                            textArea.setCaretPosition(textArea.getDocument().getLength());
+                        }
+                    });
+                }
+            } catch (IOException e) {
+                if (p.isAlive() && (e.getMessage() == null || !e.getMessage().contains("Stream closed"))) {
+                    e.printStackTrace();
+                }
+            } finally {
+                activeLogReaders.remove(serverName);
+            }
+        });
+    }
+
+    public void clearServerLog(String serverName) {
+        serverLogs.put(serverName, new StringBuilder());
     }
 
     public void openEditServer(String serverName) {
@@ -197,34 +266,10 @@ public class SMLogic {
     }
 
     public void SendToServer(String serverName, String command) {
-        if (runningProcesses.containsKey(serverName)) {
-            Process p = runningProcesses.get(serverName);
-            if (p != null && p.isAlive()) {
-                try (OutputStreamWriter w = new OutputStreamWriter(p.getOutputStream())) {
-                    w.write(command + "\n");
-                    w.flush();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        PrintWriter writer = processInputs.get(serverName);
+        if (writer != null) {
+            writer.println(command);
+            writer.flush();
         }
-    }
-
-    public void LoggingToConsole(String serverName, JTextArea textArea) {
-        if (runningProcesses.containsKey(serverName)) {
-            Process p = runningProcesses.get(serverName);
-            if (p != null && p.isAlive()) {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        textArea.append(line + "\n");
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
     }
 }
