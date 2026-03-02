@@ -10,12 +10,12 @@ public class Main {
     private static final ILogger logger = Loggers.get(Main.class);
 
     public static void main(String[] args) {
-        logger.info("Application starting");
+        logger.info("Application %s", "starting");
 
         SwingUtilities.invokeLater(() -> {
             try {
                 JFrame frame = WindowManager.createWindow("Менеджер Серверов");
-                logger.info("Main window created successfully");
+                logger.info("Main window %s successfully", "created");
             } catch (Exception e) {
                 logger.error("Failed to create main window", e);
                 JOptionPane.showMessageDialog(null,

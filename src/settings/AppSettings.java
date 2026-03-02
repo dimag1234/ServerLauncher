@@ -21,7 +21,7 @@ public class AppSettings {
     private String theme = "DARK";
 
     private AppSettings() {
-        logger.info("Initializing AppSettings");
+        logger.info("Initializing %s", "AppSettings");
         createConfigDirIfNeeded();
         load();
     }
@@ -40,17 +40,17 @@ public class AppSettings {
     private void createConfigDirIfNeeded() {
         try {
             Files.createDirectories(SETTINGS_FILE.getParent());
-            logger.debug("Config directory created/verified at: %s", SETTINGS_FILE.getParent());
+            logger.debug("Config directory %s at: %s", "created/verified", SETTINGS_FILE.getParent());
         } catch (IOException e) {
             logger.error("Cannot create config directory", e);
         }
     }
 
     public void load() {
-        logger.info("Loading settings from: " + SETTINGS_FILE.toAbsolutePath());
+        logger.info("Loading settings from: %s", SETTINGS_FILE.toAbsolutePath());
 
         if (!Files.exists(SETTINGS_FILE)) {
-            logger.warn("Settings file not found, using defaults");
+            logger.warn("Settings file %s, using defaults", "not found");
             return;
         }
 
@@ -63,7 +63,7 @@ public class AppSettings {
             fontStyle = props.getProperty("font.style", "PLAIN");
             theme = props.getProperty("theme", "DARK");
 
-            logger.info("Settings loaded successfully");
+            logger.info("Settings %s successfully", "loaded");
             logger.debug("Loaded values - fontFamily: %s, fontSize: %s, fontStyle: %s, theme: %s",
                     fontFamily, fontSize, fontStyle, theme);
 
@@ -73,7 +73,7 @@ public class AppSettings {
     }
 
     public void save() {
-        logger.info("Saving settings to: " + SETTINGS_FILE.toAbsolutePath());
+        logger.info("Saving settings to: %s", SETTINGS_FILE.toAbsolutePath());
 
         Properties props = new Properties();
 
@@ -84,7 +84,7 @@ public class AppSettings {
 
         try (OutputStream os = Files.newOutputStream(SETTINGS_FILE)) {
             props.store(os, "SwingCoding Application Settings");
-            logger.info("Settings saved successfully");
+            logger.info("Settings %s successfully", "saved");
             logger.debug("Saved values - fontFamily: %s, fontSize: %s, fontStyle: %s, theme: %s",
                     fontFamily, fontSize, fontStyle, theme);
         } catch (IOException e) {
@@ -101,12 +101,12 @@ public class AppSettings {
             default -> style;
         };
         Font font = new Font(fontFamily, style, fontSize);
-        logger.trace("Getting font: " + font);
+        logger.trace("Getting font: %s", font);
         return font;
     }
 
     public void setFont(Font font) {
-        logger.info("Setting font to: " + font);
+        logger.info("Setting font to: %s", font);
         this.fontFamily = font.getFamily();
         this.fontSize = font.getSize();
         this.fontStyle = font.isBold() && font.isItalic() ? "BOLDITALIC" :
@@ -116,12 +116,12 @@ public class AppSettings {
     }
 
     public String getTheme() {
-        logger.trace("Getting theme: " + theme);
+        logger.trace("Getting theme: %s", theme);
         return theme;
     }
 
     public void setTheme(String theme) {
-        logger.info("Setting theme to: " + theme);
+        logger.info("Setting theme to: %s", theme);
         this.theme = theme;
         save();
     }

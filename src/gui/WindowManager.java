@@ -4,7 +4,6 @@ import gui.dialogs.SettingsDialog;
 import gui.panels.server_manager_panel.SMPanel;
 import logging.ILogger;
 import logging.Loggers;
-import logging.Loggers;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,11 +16,11 @@ public class WindowManager {
     private static JFrame mainFrame;
 
     public static JFrame createWindow(String title) {
-        logger.info("Creating window: " + title);
+        logger.info("Creating window: %s", title);
 
         mainFrame = new JFrame(title);
         mainFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        
+
         mainFrame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -42,14 +41,13 @@ public class WindowManager {
         tabbedPane.addTab("Сервера", new SMPanel());
         mainFrame.add(tabbedPane);
 
-        // Добавляем обработчик закрытия через диспетчер задач (по сути то же самое)
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Application shutting down via shutdown hook");
+            logger.info("Application %s via shutdown hook", "shutting down");
             shutdownLogging();
         }));
 
         mainFrame.setVisible(true);
-        logger.info("Window created successfully");
+        logger.info("Window %s successfully", "created");
         return mainFrame;
     }
 
@@ -73,7 +71,7 @@ public class WindowManager {
     }
 
     private static void handleWindowClose() {
-        logger.info("Window close requested");
+        logger.info("Window close %s", "requested");
 
         // TODO: Here you can add checks for unsaved data.
 
@@ -84,7 +82,7 @@ public class WindowManager {
                 JOptionPane.QUESTION_MESSAGE);
 
         if (result == JOptionPane.YES_OPTION) {
-            logger.info("Shutting down application");
+            logger.info("Shutting down %s", "application");
 
             // TODO: Stopping all running servers
 
@@ -92,13 +90,13 @@ public class WindowManager {
 
             System.exit(0);
         } else {
-            logger.debug("Window close cancelled by user");
+            logger.debug("Window close %s by user", "cancelled");
         }
     }
 
     private static void shutdownLogging() {
         try {
-            logger.info("Shutting down logging system");
+            logger.info("Shutting down %s system", "logging");
             Loggers.shutdown();
         } catch (Exception e) {
             System.err.println("Error during logging shutdown: " + e.getMessage());
