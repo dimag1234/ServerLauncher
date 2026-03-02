@@ -4,7 +4,9 @@ import logging.ILogger;
 import logging.Loggers;
 
 import java.awt.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,6 +15,7 @@ import java.util.Properties;
 public class AppSettings {
     private static final ILogger logger = Loggers.get(AppSettings.class);
     private static final Path SETTINGS_FILE = Paths.get("config", "app.properties");
+
     private static volatile AppSettings instance;
 
     private String fontFamily = "Segoe UI";

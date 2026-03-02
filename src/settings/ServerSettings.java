@@ -113,10 +113,19 @@ public class ServerSettings {
         public ServerCardSettings(String serverFolderName) {
             this.serverFolderName = serverFolderName;
             this.displayName = serverFolderName;
-            this.version = "1.21.11";
+            this.version = "Paper 1.21.11";
             this.ramGB = 2;
             this.port = 25565;
             this.motd = "A Minecraft Server";
+        }
+
+        public ServerCardSettings(String serverFolderName, String version, int ramgb, String Motd) {
+            this.serverFolderName = serverFolderName;
+            this.displayName = serverFolderName;
+            this.version = version;
+            this.ramGB = ramgb;
+            this.port = 25565;
+            this.motd = Motd;
         }
 
         public String getServerFolderName() {

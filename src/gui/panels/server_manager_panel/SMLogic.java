@@ -68,7 +68,7 @@ public class SMLogic {
         try {
             Files.createDirectories(serverPath);
 
-            ServerCardSettings card = new ServerCardSettings(serverName);
+            ServerCardSettings card = new ServerCardSettings(serverName, version, ram, motd);
             ss.saveServerCardSettings(serverName, card);
 
             // Показываем карточку сразу
@@ -86,7 +86,7 @@ public class SMLogic {
 
     private void initializeServer(Path serverPath, ServerCardSettings card, String version) {
         try {
-            downloadJar(serverPath);
+            downloadJar(serverPath, version);
             createEula(serverPath);
             createBasicProperties(serverPath, card);
         } catch (Exception e) {
@@ -94,7 +94,7 @@ public class SMLogic {
         }
     }
 
-    private void downloadJar(Path serverPath) {
+    private void downloadJar(Path serverPath, String version) {
         try (InputStream in = new URL(ServerSettings.SERVER_JAR_URL).openStream()) {
             Path target = serverPath.resolve(ServerSettings.SERVER_JAR_NAME);
             Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);

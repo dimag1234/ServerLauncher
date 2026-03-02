@@ -1,8 +1,8 @@
 package gui.panels.server_manager_panel;
 
-import gui.panels.server_manager_panel.cards.ServerCard;
 import gui.common.Theme;
 import gui.common.Utils;
+import gui.panels.server_manager_panel.cards.ServerCard;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -98,7 +98,7 @@ public class SMPanel extends JPanel {
 
             gbc.gridy++;
             JComboBox<String> versionBox = new JComboBox<>(new String[]{
-                    "Paper 1.21.4", "Paper 1.21.3", "Paper 1.20.6", "Paper 1.19.4", "Vanilla 1.21.4"
+                    "Paper 1.21.11", "Test"
             });
             versionBox.setFont(Theme.FONT_MONOSPACE);
             versionBox.setPreferredSize(new Dimension(0, 42));
@@ -141,14 +141,13 @@ public class SMPanel extends JPanel {
 
             // ====================== ДЕЙСТВИЯ ======================
             createBtn.addActionListener(eg2 -> {
-                String serverName = nameField.getText().trim();
+                String serverName = nameField.getText().trim(); // ЭТО MOTD
                 if (serverName.isEmpty()) {
                     JOptionPane.showMessageDialog(dlg, "Введите название сервера!", "Ошибка", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
+                logic.createNewServer(serverName, versionBox.getSelectedItem().toString(), (Integer) ramSpinner.getValue());
 
-                // Сюда будет вызываться твоя логика создания
-                // logic.createNewServerWithSettings(serverName, versionBox.getSelectedItem().toString(), (Integer) ramSpinner.getValue());
 
                 dlg.dispose();
             });
