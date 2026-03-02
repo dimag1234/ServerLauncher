@@ -32,13 +32,13 @@ public final class LogConfig {
         // File settings
         this.fileEnabled = parseBoolean(props.getProperty("file.enabled"), true);
         this.logDir = validateLogDirectory(props.getProperty("file.directory", "logs"));
-        this.fileLevel = Level.parse(props.getProperty("file.level", "INFO"));
-        this.filePattern = props.getProperty("file.pattern", "app_%d{yyyy-MM-dd}.log");
+        this.fileLevel = parseLevel(props.getProperty("file.level", "INFO"));
+        this.filePattern = props.getProperty("file.pattern", "app.log");
         this.fileAppend = parseBoolean(props.getProperty("file.append"), true);
 
         // Console settings
         this.consoleEnabled = parseBoolean(props.getProperty("console.enabled"), true);
-        this.consoleLevel = Level.parse(props.getProperty("console.level", "WARNING"));
+        this.consoleLevel = parseLevel(props.getProperty("console.level", "INFO"));
         this.colorEnabled = parseBoolean(props.getProperty("console.color"), true);
         this.showThread = parseBoolean(props.getProperty("console.thread"), false);
         this.consoleTimestamp = parseBoolean(props.getProperty("console.timestamp"), true);
@@ -46,6 +46,16 @@ public final class LogConfig {
         if (!validationErrors.isEmpty()) {
             System.err.println("WARNING: Logging configuration validation errors:");
             System.err.println(validationErrors.toString());
+        }
+    }
+
+    private Level parseLevel(String level) {
+        if (level == null) return Level.INFO;
+        try {
+            return Level.parse(level.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            validationErrors.append("Invalid level: ").append(level).append(", using INFO\n");
+            return Level.INFO;
         }
     }
 
@@ -71,11 +81,11 @@ public final class LogConfig {
                 props.setProperty("file.enabled", "true");
                 props.setProperty("file.directory", "logs");
                 props.setProperty("file.level", "INFO");
-                props.setProperty("file.pattern", "app_%d{yyyy-MM-dd}.log");
+                props.setProperty("file.pattern", "app.log");
                 props.setProperty("file.append", "true");
 
                 props.setProperty("console.enabled", "true");
-                props.setProperty("console.level", "WARNING");
+                props.setProperty("console.level", "INFO");
                 props.setProperty("console.color", "true");
                 props.setProperty("console.thread", "false");
                 props.setProperty("console.timestamp", "true");
