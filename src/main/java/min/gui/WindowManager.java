@@ -102,7 +102,7 @@ public class WindowManager {
         menuBar.add(Box.createHorizontalGlue());
         JMenu settingsMenu = new JMenu("Настройки");
         JMenuItem settingsItem = new JMenuItem("Параметры");
-        settingsItem.addActionListener((ActionEvent _) -> {
+        settingsItem.addActionListener(e -> {
             SettingsDialog dialog = new SettingsDialog(mainFrame);
             dialog.setVisible(true);
         });
