@@ -1,7 +1,7 @@
-package settings;
+package min.settings;
 
-import logging.ILogger;
-import logging.Loggers;
+import min.logging.ILogger;
+import min.logging.Loggers;
 
 import java.awt.*;
 import java.io.IOException;

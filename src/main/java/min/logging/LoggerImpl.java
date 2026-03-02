@@ -1,8 +1,8 @@
-package logging;
+package min.logging;
 
-import logging.handlers.CustomConsoleHandler;
-import logging.formatters.Formatter;
-import logging.handlers.FileHandlerImpl;
+import min.logging.handlers.CustomConsoleHandler;
+import min.logging.formatters.Formatter;
+import min.logging.handlers.FileHandlerImpl;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;

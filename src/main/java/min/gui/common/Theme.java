@@ -1,6 +1,6 @@
-package gui.common;
+package min.gui.common;
 
-import settings.AppSettings;
+import min.settings.AppSettings;
 import java.awt.*;
 
 public class Theme {

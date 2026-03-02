@@ -1,9 +1,9 @@
-package gui.panels.server_manager_panel;
+package min.gui.panels.server_manager_panel;
 
-import gui.panels.server_manager_panel.cards.EditServerCard;
-import gui.panels.server_manager_panel.cards.ServerCard;
-import settings.ServerSettings;
-import settings.ServerSettings.ServerCardSettings;
+import min.gui.panels.server_manager_panel.cards.EditServerCard;
+import min.gui.panels.server_manager_panel.cards.ServerCard;
+import min.settings.ServerSettings;
+import min.settings.ServerSettings.ServerCardSettings;
 
 import javax.swing.*;
 import java.awt.*;

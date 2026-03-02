@@ -1,10 +1,10 @@
-package gui.dialogs;
+package min.gui.dialogs;
 
-import gui.common.Theme;
-import gui.common.Utils;
-import logging.ILogger;
-import logging.Loggers;
-import settings.AppSettings;
+import min.gui.common.Theme;
+import min.gui.common.Utils;
+import min.logging.ILogger;
+import min.logging.Loggers;
+import min.settings.AppSettings;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

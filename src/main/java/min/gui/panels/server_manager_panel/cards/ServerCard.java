@@ -1,9 +1,9 @@
-package gui.panels.server_manager_panel.cards;
+package min.gui.panels.server_manager_panel.cards;
 
-import gui.panels.server_manager_panel.SMLogic;
-import gui.common.Theme;
-import gui.common.Utils;
-import settings.ServerSettings.ServerCardSettings;
+import min.gui.panels.server_manager_panel.SMLogic;
+import min.gui.common.Theme;
+import min.gui.common.Utils;
+import min.settings.ServerSettings.ServerCardSettings;
 
 import javax.swing.*;
 import java.awt.*;

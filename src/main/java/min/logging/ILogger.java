@@ -1,4 +1,4 @@
-package logging;
+package min.logging;
 
 public interface ILogger extends AutoCloseable {
     void error(String format, Object... args);

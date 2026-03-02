@@ -1,4 +1,4 @@
-package logging;
+package min.logging;
 
 import java.io.*;
 import java.nio.file.Files;

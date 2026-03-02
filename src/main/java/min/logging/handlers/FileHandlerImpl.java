@@ -1,8 +1,8 @@
-package logging.handlers;
+package min.logging.handlers;
 
-import logging.LogConfig;
-import logging.Loggers;
-import logging.formatters.Formatter;
+import min.logging.LogConfig;
+import min.logging.Loggers;
+import min.logging.formatters.Formatter;
 
 import java.io.PrintStream;
 import java.util.logging.Handler;

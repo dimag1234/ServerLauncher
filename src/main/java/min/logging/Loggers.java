@@ -1,4 +1,4 @@
-package logging;
+package min.logging;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

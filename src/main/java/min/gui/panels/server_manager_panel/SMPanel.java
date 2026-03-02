@@ -1,8 +1,8 @@
-package gui.panels.server_manager_panel;
+package min.gui.panels.server_manager_panel;
 
-import gui.common.Theme;
-import gui.common.Utils;
-import gui.panels.server_manager_panel.cards.ServerCard;
+import min.gui.common.Theme;
+import min.gui.common.Utils;
+import min.gui.panels.server_manager_panel.cards.ServerCard;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

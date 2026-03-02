@@ -1,4 +1,4 @@
-package settings;
+package min.settings;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package logging.formatters;
+package min.logging.formatters;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

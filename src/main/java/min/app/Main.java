@@ -1,8 +1,8 @@
-package app;
+package min.app;
 
-import gui.WindowManager;
-import logging.ILogger;
-import logging.Loggers;
+import min.gui.WindowManager;
+import min.logging.ILogger;
+import min.logging.Loggers;
 
 import javax.swing.*;
 

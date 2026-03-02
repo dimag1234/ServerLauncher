@@ -1,6 +1,6 @@
-package logging.handlers;
+package min.logging.handlers;
 
-import logging.LogConfig;
+import min.logging.LogConfig;
 
 import java.util.logging.ConsoleHandler;
 import java.util.logging.LogRecord;

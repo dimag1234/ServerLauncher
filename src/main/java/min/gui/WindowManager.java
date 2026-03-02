@@ -1,10 +1,10 @@
-package gui;
+package min.gui;
 
-import gui.dialogs.SettingsDialog;
-import gui.panels.server_manager_panel.SMPanel;
-import logging.ILogger;
-import logging.Loggers;
-import settings.AppSettings;
+import min.gui.dialogs.SettingsDialog;
+import min.gui.panels.server_manager_panel.SMPanel;
+import min.logging.ILogger;
+import min.logging.Loggers;
+import min.settings.AppSettings;
 
 import javax.swing.*;
 import java.awt.*;
@@ -137,7 +137,7 @@ public class WindowManager {
 
     private static void shutdownLogging() {
         try {
-            logger.info("Shutting down %s system", "logging");
+            logger.info("Shutting down %s system", "min/logging");
             Loggers.shutdown();
         } catch (Exception e) {
             System.err.println("Error during logging shutdown: " + e.getMessage());
