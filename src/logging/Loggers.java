@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 public final class Loggers {
     private static final Map<String, ILogger> CACHE = new ConcurrentHashMap<>();
@@ -32,13 +33,21 @@ public final class Loggers {
     public static void reload() {
         synchronized (RELOAD_LOCK) {
             LogConfig newConfig = new LogConfig();
+            CONFIG.set(newConfig);
 
             Map<String, ILogger> newCache = new ConcurrentHashMap<>();
             for (String name : CACHE.keySet()) {
                 newCache.put(name, new LoggerImpl(name, newConfig));
             }
 
-            CONFIG.set(newConfig);
+            // Закрываем старые логгеры
+            for (ILogger logger : CACHE.values()) {
+                try {
+                    logger.close();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
 
             CACHE.clear();
             CACHE.putAll(newCache);
@@ -77,6 +86,7 @@ public final class Loggers {
             String loggerName = "app." + name;
             java.util.logging.Logger logger = java.util.logging.Logger.getLogger(loggerName);
 
+            // Удаляем все существующие обработчики
             for (Handler handler : logger.getHandlers()) {
                 logger.removeHandler(handler);
                 handler.close();
@@ -85,33 +95,51 @@ public final class Loggers {
             logger.setLevel(Level.ALL);
             logger.setUseParentHandlers(false);
 
-            addHandlers(logger, config);
+            addHandlers(logger, config, name);
 
             return logger;
         }
 
-        private void addHandlers(java.util.logging.Logger logger, LogConfig config) {
+        private void addHandlers(java.util.logging.Logger logger, LogConfig config, String loggerName) {
+            // Файловый обработчик - отдельный для каждого логгера, но в один файл
             if (config.isFileEnabled()) {
                 try {
                     Path logDir = Paths.get(config.getLogDir());
                     Files.createDirectories(logDir);
 
-                    String pattern = logDir.resolve("app_%u_%g.log").toString();
-                    FileHandler fh = new FileHandler(pattern, 1024 * 1024, 5, config.isFileAppend());
-                    fh.setFormatter(new Formatter(true, true, name));
-                    fh.setLevel(config.getFileLevel());
-                    logger.addHandler(fh);
+                    // Используем единый файл для всех логов
+                    String pattern = logDir.resolve("app.log").toString();
+
+                    // Важно: каждый логгер должен иметь свой FileHandler,
+                    // но все они пишут в один файл
+                    FileHandler fileHandler = new FileHandler(
+                            pattern,           // один файл для всех
+                            10 * 1024 * 1024,  // 10MB max size
+                            1,                  // только 1 файл (без ротации по индексам)
+                            config.isFileAppend()
+                    );
+
+                    fileHandler.setLevel(config.getFileLevel());
+                    fileHandler.setFormatter(new Formatter(
+                            config.isConsoleTimestamp(),  // timestamp
+                            false,                         // showThread = false
+                            loggerName                      // имя класса для этого логгера
+                    ));
+
+                    logger.addHandler(fileHandler);
+
                 } catch (IOException e) {
-                    System.err.println("Cannot create file handler: " + e.getMessage());
+                    System.err.println("Cannot create file handler for " + loggerName + ": " + e.getMessage());
                 }
             }
 
+            // Консольный обработчик
             if (config.isConsoleEnabled()) {
                 CustomConsoleHandler ch = new CustomConsoleHandler(config);
                 ch.setFormatter(new Formatter(
                         config.isConsoleTimestamp(),
                         config.isShowThread(),
-                        name
+                        loggerName
                 ));
                 ch.setLevel(config.getConsoleLevel());
                 logger.addHandler(ch);
