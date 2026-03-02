@@ -44,6 +44,7 @@ public class SettingsDialog extends JDialog {
     private void initComponents() {
         logger.debug("Initializing settings dialog components");
         setLayout(new BorderLayout(10, 10));
+
         getContentPane().setBackground(Theme.BACKGROUND_MEDIUM);
         ((JComponent) getContentPane()).setBorder(new EmptyBorder(20, 20, 20, 20));
 
@@ -82,6 +83,14 @@ public class SettingsDialog extends JDialog {
         gbc.gridx = 1;
         fontSizeSpinner = new JSpinner(new SpinnerNumberModel(14, 8, 72, 1));
         fontSizeSpinner.setPreferredSize(new Dimension(80, 30));
+
+        JComponent editor = fontSizeSpinner.getEditor();
+        if (editor instanceof JSpinner.DefaultEditor) {
+            JFormattedTextField textField = ((JSpinner.DefaultEditor) editor).getTextField();
+            textField.setFont(settings.getFont());
+            textField.setHorizontalAlignment(JTextField.CENTER);
+        }
+
         panel.add(fontSizeSpinner, gbc);
 
         gbc.gridy = row++;
@@ -114,9 +123,7 @@ public class SettingsDialog extends JDialog {
 
         JButton cancelBtn = new JButton("Отмена");
         Utils.stylePrimaryButton(cancelBtn);
-        cancelBtn.addActionListener(e -> {
-            handleClose();
-        });
+        cancelBtn.addActionListener(e -> handleClose());
 
         buttons.add(saveBtn);
         buttons.add(cancelBtn);
@@ -170,7 +177,7 @@ public class SettingsDialog extends JDialog {
 
         logger.info("Settings saved successfully");
         JOptionPane.showMessageDialog(this,
-                "Настройки сохранены в config/app.properties\nНекоторые изменения вступят в силу после перезапуска.",
+                "Настройки сохранены в config/app.properties\nИзменения будут применены при следующем запуске приложения.",
                 "Успех",
                 JOptionPane.INFORMATION_MESSAGE);
 

@@ -93,12 +93,12 @@ public final class Loggers {
                         Path logDir = Paths.get(config.getLogDir());
                         Files.createDirectories(logDir);
 
-                        Path logFile = logDir.resolve("app.log");
+                        Path logFile = logDir.resolve(config.getFilePattern());
 
                         FileOutputStream fos = new FileOutputStream(logFile.toFile(), config.isFileAppend());
-
                         filePrintStream = new PrintStream(fos, true, StandardCharsets.UTF_8);
 
+                        System.out.println("Log file created: " + logFile.toAbsolutePath());
                     } catch (IOException e) {
                         System.err.println("Cannot create file stream: " + e.getMessage());
                     }
