@@ -1,8 +1,8 @@
 package gui.panels.server_manager_panel;
 
 import gui.panels.server_manager_panel.cards.ServerCard;
-import gui.share.Theme;
-import gui.share.Utils;
+import gui.common.Theme;
+import gui.common.Utils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

@@ -1,4 +1,4 @@
-package gui.share;
+package gui.common;
 
 import javax.swing.*;
 import javax.swing.border.Border;

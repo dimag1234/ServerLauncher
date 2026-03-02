@@ -1,4 +1,4 @@
-package gui.share;
+package gui.common;
 
 import java.awt.*;
 
