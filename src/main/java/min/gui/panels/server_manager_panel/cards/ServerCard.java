@@ -39,7 +39,7 @@ public class ServerCard extends JPanel {
         add(name, gbc);
 
         // Edit
-        JButton edit = new JButton("Edit");
+        JButton edit = new JButton("Manage");
         styleButton(edit);
         edit.addActionListener(e -> logic.openEditServer(card.getServerFolderName()));
 
@@ -67,6 +67,7 @@ public class ServerCard extends JPanel {
         gbc.weightx = 0.6;
         gbc.anchor = GridBagConstraints.EAST;
         add(right, gbc);
+        logic.registerServerUI(card.getServerFolderName(), statusLabel, startBtn);
     }
 
     private void styleButton(JButton b) {

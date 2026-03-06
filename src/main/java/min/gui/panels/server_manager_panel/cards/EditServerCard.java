@@ -24,10 +24,9 @@ public class EditServerCard extends JPanel {
     private final JSpinner ramSpinner;
     private final JSpinner portSpinner;
     private final JTextField motdField;
-    private final JTextArea logArea = new JTextArea();
-    ;
-    private final JScrollPane logAreafinal;
-    private final JTextField inputcommands;
+//    private final JTextArea logArea = new JTextArea();
+//    private final JScrollPane logAreafinal;
+//    private final JTextField inputcommands;
 
     public EditServerCard(String serverName, SMLogic logic) {
 
@@ -38,6 +37,8 @@ public class EditServerCard extends JPanel {
         setLayout(new BorderLayout(15, 15));
         setBackground(Theme.BACKGROUND_MEDIUM);
         setBorder(new EmptyBorder(20, 20, 20, 20));
+
+
 
         // ===================== ЗАГОЛОВОК =====================
         JLabel title = new JLabel("Редактирование сервера");
@@ -81,69 +82,69 @@ public class EditServerCard extends JPanel {
         motdField = new JTextField(card.getMotd(), 30);
         addFormRow(form, gbc, row++, "MOTD:", motdField);
 
-        // INPUT COMMANDS
-        inputcommands = new JTextField();
-        inputcommands.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyChar() == KeyEvent.VK_ENTER) {
-                    String cmd = inputcommands.getText().trim();
-                    if (!cmd.isEmpty()) {
-                        logic.SendToServer(card.getServerFolderName(), cmd);
-                        logArea.append("> " + cmd + "\n");
-                        inputcommands.setText("");
-                        logArea.setCaretPosition(logArea.getDocument().getLength());
-                    }
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-
-            }
-        });
-        addFormRow(form, gbc, row++, "Input", inputcommands);
-
-        JButton clearBtn = new JButton("Очистить консоль");
-        Utils.stylePrimaryButton(clearBtn);
-        clearBtn.addActionListener(e -> {
-            logic.clearServerLog(serverName);
-            logArea.setText("");
-        });
-        addFormRow(form, gbc, row++, "Очистить консоль", clearBtn);
-
-
-        // LOG AREA
-        logArea.setEditable(false);
-        logArea.setFont(new Font("Consolas", Font.PLAIN, 13)); // красивый шрифт
-        logArea.setBackground(new Color(30, 30, 30));
-        logArea.setForeground(Color.LIGHT_GRAY);
-        logAreafinal = new JScrollPane(logArea);
-        logAreafinal.setPreferredSize(new Dimension(600, 300)); // минимальный размер
-
-        // Добавляем в форму с растяжением
-        gbc.gridx = 0;
-        gbc.gridy = row++;
-        gbc.gridwidth = 2;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;        // ← главное для растяжения
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.anchor = GridBagConstraints.CENTER;
-        JLabel consoleLabel = new JLabel("Console");
-        consoleLabel.setForeground(Theme.TEXT_PRIMARY);
-        form.add(consoleLabel, gbc);
-
-        gbc.gridy = row++;
-        gbc.gridheight = 4;       // занимаем несколько строк для высоты
-        form.add(logAreafinal, gbc);
-
-        // ← НОВОЕ: сразу загружаем сохранённую историю
-        logic.LoggingToConsole(card.getServerFolderName(), logArea);   // без CompletableFuture!
+//        // INPUT COMMANDS
+//        inputcommands = new JTextField();
+//        inputcommands.addKeyListener(new KeyListener() {
+//            @Override
+//            public void keyTyped(KeyEvent e) {
+//
+//            }
+//
+//            @Override
+//            public void keyPressed(KeyEvent e) {
+//                if (e.getKeyChar() == KeyEvent.VK_ENTER) {
+//                    String cmd = inputcommands.getText().trim();
+//                    if (!cmd.isEmpty()) {
+//                        logic.SendToServer(card.getServerFolderName(), cmd);
+//                        logArea.append("> " + cmd + "\n");
+//                        inputcommands.setText("");
+//                        logArea.setCaretPosition(logArea.getDocument().getLength());
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void keyReleased(KeyEvent e) {
+//
+//            }
+//        });
+//        addFormRow(form, gbc, row++, "Input", inputcommands);
+//
+//        JButton clearBtn = new JButton("Очистить консоль");
+//        Utils.stylePrimaryButton(clearBtn);
+//        clearBtn.addActionListener(e -> {
+//            logic.clearServerLog(serverName);
+//            logArea.setText("");
+//        });
+//        addFormRow(form, gbc, row++, "Очистить консоль", clearBtn);
+//
+//
+//        // LOG AREA
+//        logArea.setEditable(false);
+//        logArea.setFont(new Font("Consolas", Font.PLAIN, 13)); // красивый шрифт
+//        logArea.setBackground(new Color(30, 30, 30));
+//        logArea.setForeground(Color.LIGHT_GRAY);
+//        logAreafinal = new JScrollPane(logArea);
+//        logAreafinal.setPreferredSize(new Dimension(600, 300)); // минимальный размер
+//
+//        // Добавляем в форму с растяжением
+//        gbc.gridx = 0;
+//        gbc.gridy = row++;
+//        gbc.gridwidth = 2;
+//        gbc.weightx = 1.0;
+//        gbc.weighty = 1.0;        // ← главное для растяжения
+//        gbc.fill = GridBagConstraints.BOTH;
+//        gbc.anchor = GridBagConstraints.CENTER;
+//        JLabel consoleLabel = new JLabel("Console");
+//        consoleLabel.setForeground(Theme.TEXT_PRIMARY);
+//        form.add(consoleLabel, gbc);
+//
+//        gbc.gridy = row++;
+//        gbc.gridheight = 4;       // занимаем несколько строк для высоты
+//        form.add(logAreafinal, gbc);
+//
+//        // ← НОВОЕ: сразу загружаем сохранённую историю
+//        logic.LoggingToConsole(card.getServerFolderName(), logArea);   // без CompletableFuture!
 
 
         add(form, BorderLayout.CENTER);

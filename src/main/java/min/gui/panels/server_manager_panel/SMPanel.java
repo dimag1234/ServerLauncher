@@ -1,5 +1,6 @@
 package min.gui.panels.server_manager_panel;
 
+import min.Parser.Parser;
 import min.gui.common.Theme;
 import min.gui.common.Utils;
 import min.gui.panels.server_manager_panel.cards.ServerCard;
@@ -7,6 +8,11 @@ import min.gui.panels.server_manager_panel.cards.ServerCard;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.io.IOException;
+import java.util.List;
+
+import static min.Parser.Parser.ServerType.PAPER;
+import static min.Parser.Parser.ServerType.VANILLA;
 
 public class SMPanel extends JPanel {
 
@@ -97,9 +103,34 @@ public class SMPanel extends JPanel {
             form.add(versionLabel, gbc);
 
             gbc.gridy++;
-            JComboBox<String> versionBox = new JComboBox<>(new String[]{
-                    "Paper 1.21.11", "Test"
-            });
+            JComboBox<String> versionBox = new JComboBox<>(new String[]{});
+            try {
+                List<String> versions = Parser.getVersions(PAPER);
+
+                versions.sort((v1, v2) -> {
+                    String[] parts1 = v1.split("\\.");
+                    String[] parts2 = v2.split("\\.");
+                    int length = Math.max(parts1.length, parts2.length);
+                    for (int i = 0; i < length; i++) {
+                        String p1 = i < parts1.length ? parts1[i] : "0";
+                        String p2 = i < parts2.length ? parts2[i] : "0";
+                        int num1 = Integer.parseInt(p1.replaceAll("[^0-9].*", "0").isEmpty() ? "0" : p1.replaceAll("[^0-9].*", ""));
+                        int num2 = Integer.parseInt(p2.replaceAll("[^0-9].*", "0").isEmpty() ? "0" : p2.replaceAll("[^0-9].*", ""));
+                        if (num1 != num2) return Integer.compare(num2, num1);
+                    }
+                    boolean isV1Release = v1.matches("[0-9.]+");
+                    boolean isV2Release = v2.matches("[0-9.]+");
+                    if (isV1Release && !isV2Release) return -1;
+                    if (!isV1Release && isV2Release) return 1;
+                    return v2.compareTo(v1);
+                });
+                for (String item : versions) {
+                    versionBox.addItem(item);
+                }
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+
             versionBox.setFont(Theme.FONT_MONOSPACE);
             versionBox.setPreferredSize(new Dimension(0, 42));
             versionBox.setSelectedIndex(0);
