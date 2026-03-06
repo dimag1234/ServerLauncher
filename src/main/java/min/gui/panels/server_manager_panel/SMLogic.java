@@ -4,6 +4,8 @@ import min.Parser.Parser;
 import min.gui.common.Theme;
 import min.gui.panels.server_manager_panel.cards.EditServerCard;
 import min.gui.panels.server_manager_panel.cards.ManageServerCard;
+import min.gui.panels.server_manager_panel.cards.PluginsCard;
+import min.gui.panels.server_manager_panel.cards.PluginsCard;
 import min.gui.panels.server_manager_panel.cards.ServerCard;
 import min.settings.ServerSettings;
 import min.settings.ServerSettings.ServerCardSettings;
@@ -316,6 +318,7 @@ public class SMLogic {
         JTabbedPane tabbedPane2 = new JTabbedPane();
         tabbedPane2.addTab("Консоль", new ManageServerCard(serverName, this));
         tabbedPane2.addTab("Настройки", new EditServerCard(serverName, this));
+        tabbedPane2.addTab("Плагины", new PluginsCard(serverName, this));
         dlg.add(tabbedPane2);
         dlg.pack();
         dlg.setLocationRelativeTo(parent);
@@ -333,5 +336,9 @@ public class SMLogic {
             writer.println(command);
             writer.flush();
         }
+    }
+
+    public Path getServerPath(String serverName) {
+        return ss.getServerPath(serverName);
     }
 }
