@@ -1,1 +1,1 @@
-rootProject.name = "SwingCodingGradle"
+rootProject.name = "JavafxCoding"
