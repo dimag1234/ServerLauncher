@@ -10,6 +10,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.min.Parser.Parser;
+import org.min.gui.common.FxUtils;
 import org.min.gui.common.Theme;
 import org.min.gui.panels.server_manager_panel.cards.ServerCard;
 
@@ -74,6 +75,9 @@ public class SMPanel extends BorderPane {
         root.setPadding(new Insets(34));
         root.setPrefWidth(500);
 
+        // Apply current theme to this dialog
+        FxUtils.applyThemeClass(root);
+
         Label title = new Label("Новый Minecraft сервер");
         title.getStyleClass().add(Theme.LABEL_TITLE);
         title.setMaxWidth(Double.MAX_VALUE);
@@ -106,7 +110,7 @@ public class SMPanel extends BorderPane {
         versionBox.setPlaceholder(new Label("Загрузка версий..."));
         addRow(grid, 1, "Версия Paper:", versionBox);
 
-        // Async version load
+        // Async version load — errors shown to user, not just printed to stderr
         new Thread(() -> {
             try {
                 List<String> versions = Parser.getVersions(PAPER);
@@ -124,7 +128,13 @@ public class SMPanel extends BorderPane {
                     versionBox.setItems(FXCollections.observableArrayList(versions));
                     if (!versions.isEmpty()) versionBox.getSelectionModel().selectFirst();
                 });
-            } catch (IOException ex) { ex.printStackTrace(); }
+            } catch (IOException ex) {
+                Platform.runLater(() -> {
+                    versionBox.setPlaceholder(new Label("Ошибка загрузки версий"));
+                    showAlert(dlg, Alert.AlertType.ERROR,
+                            "Не удалось загрузить версии Paper:\n" + ex.getMessage());
+                });
+            }
         }).start();
 
         // RAM
@@ -182,6 +192,7 @@ public class SMPanel extends BorderPane {
         a.initOwner(owner);
         a.setHeaderText(null);
         a.setContentText(msg);
+        FxUtils.style(a);   // was missing — dialogs appeared unstyled / wrong theme
         a.showAndWait();
     }
 
@@ -196,6 +207,7 @@ public class SMPanel extends BorderPane {
             alert.setHeaderText(null);
             alert.setContentText(message);
             if (getScene() != null) alert.initOwner(getScene().getWindow());
+            FxUtils.style(alert);   // was missing
             alert.showAndWait();
         });
     }

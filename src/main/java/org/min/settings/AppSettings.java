@@ -100,10 +100,18 @@ public class AppSettings {
         save();
     }
 
-    /** Builds a JavaFX-compatible CSS font-size + family hint (handy for inline styles). */
+    /**
+     * Builds a JavaFX-compatible inline CSS string for font properties.
+     * Use with Node.setStyle() — e.g. root.setStyle(settings.getFontCss()).
+     *
+     * Previously returned HTML font shorthand syntax which is invalid in JavaFX.
+     */
     public String getFontCss() {
         String weight = fontStyle.contains("BOLD")   ? "bold"   : "normal";
         String italic = fontStyle.contains("ITALIC")  ? "italic" : "normal";
-        return italic + " " + weight + " " + fontSize + "px '" + fontFamily + "'";
+        return "-fx-font-family: '" + fontFamily + "';" +
+                "-fx-font-size: "   + fontSize   + "px;" +
+                "-fx-font-weight: " + weight     + ";" +
+                "-fx-font-style: "  + italic     + ";";
     }
 }

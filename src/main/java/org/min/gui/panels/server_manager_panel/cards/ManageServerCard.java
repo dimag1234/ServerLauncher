@@ -77,6 +77,8 @@ public class ManageServerCard extends BorderPane {
             }
         });
 
+
+        logArea.setStyle("-fx-text-fill: #ffffff;");
         VBox consoleBox = new VBox(0, logArea, inputField);
         VBox.setVgrow(logArea, Priority.ALWAYS);
         setCenter(consoleBox);

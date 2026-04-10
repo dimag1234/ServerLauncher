@@ -16,6 +16,7 @@ module org.min.javafxcoding {
     requires okhttp3;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
+    requires kotlin.stdlib;
 
     // ── Opens / Exports ───────────────────────────────────────
     opens org.min.app to javafx.graphics, javafx.fxml;

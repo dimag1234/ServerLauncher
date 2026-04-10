@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import org.min.gui.common.FxUtils;
 import org.min.gui.common.Theme;
 import org.min.gui.panels.server_manager_panel.SMLogic;
 import org.min.logging.ILogger;
@@ -157,16 +158,19 @@ public class EditServerCard extends BorderPane {
             alert.setHeaderText(null);
             alert.setContentText("Настройки сохранены!");
             if (getScene() != null) alert.initOwner(getScene().getWindow());
+            FxUtils.style(alert);   // was missing
             alert.showAndWait();
 
             closeStage();
         } catch (Exception ex) {
             logger.error("Error saving settings for: " + serverName, ex);
+
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Ошибка");
             alert.setHeaderText(null);
             alert.setContentText("Ошибка сохранения:\n" + ex.getMessage());
             if (getScene() != null) alert.initOwner(getScene().getWindow());
+            FxUtils.style(alert);   // was missing
             alert.showAndWait();
         }
     }

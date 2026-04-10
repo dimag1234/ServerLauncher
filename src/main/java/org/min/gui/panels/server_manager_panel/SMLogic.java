@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.min.Parser.Parser;
+import org.min.gui.common.FxUtils;
 import org.min.gui.common.Theme;
 import org.min.gui.panels.server_manager_panel.cards.*;
 import org.min.settings.ServerSettings;
@@ -104,8 +105,8 @@ public class SMLogic {
             ss.saveServerCardSettings(serverName, card);
             panel.addServerCard(new ServerCard(card, this));
             CompletableFuture
-                .runAsync(() -> initializeServer(serverPath, card, version))
-                .thenRun(() -> System.out.println("✅ Сервер " + serverName + " создан"));
+                    .runAsync(() -> initializeServer(serverPath, card, version))
+                    .thenRun(() -> System.out.println("✅ Сервер " + serverName + " создан"));
         } catch (IOException e) {
             e.printStackTrace();
             panel.showMessage("Ошибка создания: " + e.getMessage());
@@ -261,6 +262,9 @@ public class SMLogic {
                 new Tab("Настройки", new EditServerCard(serverName, this)),
                 new Tab("Плагины",   new PluginsCard(serverName, this))
         );
+
+        // Apply current theme to this dialog — was missing
+        FxUtils.applyThemeClass(tabs);
 
         Scene scene = new Scene(tabs, 1000, 650);
         scene.getStylesheets().add(

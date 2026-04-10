@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import org.min.gui.common.FxUtils;
 import org.min.gui.common.Theme;
 import org.min.gui.panels.server_manager_panel.SMLogic;
 import org.min.logging.ILogger;
@@ -33,7 +34,7 @@ public class PluginsCard extends BorderPane {
     private final Label        statusLabel  = new Label("Загружаем популярные плагины...");
     private final ListView<PluginItem> resultsList = new ListView<>();
 
-    private final Button downloadBtn   = new Button("⬇ Скачать");
+    private final Button downloadBtn    = new Button("⬇ Скачать");
     private final Button openBrowserBtn = new Button("🌐 Modrinth");
     private final Button prevBtn        = new Button("← Назад");
     private final Button nextBtn        = new Button("Вперёд →");
@@ -45,7 +46,7 @@ public class PluginsCard extends BorderPane {
 
     // ── Data record ───────────────────────────────────────────
     private record PluginItem(String slug, String title, String author,
-                               String description, int downloads, String version) {
+                              String description, int downloads, String version) {
         @Override public String toString() { return title; }
     }
 
@@ -213,8 +214,8 @@ public class PluginsCard extends BorderPane {
                 logger.error("Plugin search failed", ex);
                 Platform.runLater(() -> {
                     statusLabel.setText("❌ " + ex.getMessage());
+                    // Use LABEL_STOPPED class only — do not mix CSS class + inline -c-* var
                     statusLabel.getStyleClass().setAll(Theme.LABEL_STOPPED);
-                    statusLabel.setStyle("-fx-text-fill: -c-red;");
                 });
             }
         });
@@ -322,16 +323,17 @@ public class PluginsCard extends BorderPane {
         alert.setHeaderText(null);
         alert.setContentText(msg);
         if (getScene() != null) alert.initOwner(getScene().getWindow());
+        FxUtils.style(alert);   // was missing — dialog always appeared unstyled / wrong theme
         alert.showAndWait();
     }
 
     // ── Custom cell ───────────────────────────────────────────
     private static class PluginCell extends ListCell<PluginItem> {
 
-        private final Label titleLbl   = new Label();
-        private final Label authorLbl  = new Label();
-        private final Label descLbl    = new Label();
-        private final Label dlLbl      = new Label();
+        private final Label titleLbl  = new Label();
+        private final Label authorLbl = new Label();
+        private final Label descLbl   = new Label();
+        private final Label dlLbl     = new Label();
         private final VBox  root;
 
         PluginCell() {

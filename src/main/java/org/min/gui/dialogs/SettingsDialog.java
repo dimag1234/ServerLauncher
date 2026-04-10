@@ -9,6 +9,8 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import org.min.gui.WindowManager;
+import org.min.gui.common.FxUtils;
 import org.min.gui.common.Theme;
 import org.min.logging.ILogger;
 import org.min.logging.Loggers;
@@ -49,6 +51,12 @@ public class SettingsDialog extends Stage {
         Scene scene = new Scene(root);
         scene.getStylesheets().add(
                 getClass().getResource(Theme.CSS_PATH).toExternalForm());
+
+        // Apply current theme to this dialog's scene too
+        if ("LIGHT".equals(settings.getTheme())) {
+            root.getStyleClass().add("light-theme");
+        }
+
         setScene(scene);
 
         loadSettings();
@@ -167,19 +175,24 @@ public class SettingsDialog extends Stage {
             case 3  -> "BOLDITALIC";
             default -> "PLAIN";
         };
-        settings.setFont(family, size, style);
-
         String theme = themeBox.getSelectionModel().getSelectedIndex() == 0 ? "DARK" : "LIGHT";
+
+        // Persist
+        settings.setFont(family, size, style);
         settings.setTheme(theme);
 
-        logger.info("Settings saved successfully");
+        // ── Apply live — no restart needed ───────────────────
+        WindowManager.applyTheme(theme);
+        WindowManager.applyFont(family, size, style);
+
+        logger.info("Settings saved and applied successfully");
 
         Alert info = new Alert(Alert.AlertType.INFORMATION);
         info.setTitle("Успех");
         info.setHeaderText(null);
-        info.setContentText("Настройки сохранены в config/app.properties\n" +
-                "Изменения применятся при следующем запуске.");
+        info.setContentText("Настройки сохранены и применены!");
         info.initOwner(this);
+        FxUtils.style(info);
         info.showAndWait();
 
         close();

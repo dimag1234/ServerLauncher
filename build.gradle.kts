@@ -3,7 +3,7 @@ plugins {
     application
     id("org.javamodularity.moduleplugin") version "1.8.15"
     id("org.openjfx.javafxplugin") version "0.0.13"
-    id("org.beryx.jlink") version "2.25.0"
+    id("org.beryx.jlink") version "3.2.1"
 }
 
 group = "org.min"
@@ -18,6 +18,15 @@ val junitVersion = "5.12.1"
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+tasks.jar {
+    manifest {
+        attributes(
+            "Main-Class" to "org.min.app.Launcher",
+            "Implementation-Title" to "MCSL",
+            "Implementation-Version" to project.version
+        )
     }
 }
 
@@ -40,7 +49,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")
-
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.20")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
 }

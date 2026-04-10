@@ -19,6 +19,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        // Force Modena — prevents Astra Linux / GTK from hijacking JavaFX styles
+        Application.setUserAgentStylesheet(Application.STYLESHEET_MODENA);
         try {
             WindowManager.createWindow(primaryStage, "Менеджер Серверов");
             logger.info("Main window %s successfully", "created");
